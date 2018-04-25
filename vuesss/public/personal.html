@@ -6,7 +6,7 @@
             <template slot-scope="props">
                 <el-form label-position="left" inline class="demo-table-expand">
                     <el-form-item label="头像">
-                        <img :src="props.row.photo" alt="">
+                        <div class="headphoto"><img :src="props.row.photo" alt=""></div><el-button size="mini" type="primary" plain onclick="indexVm.loadPage('/menu/upload.html')">上传头像</el-button>
                     </el-form-item>
                     <el-form-item label="ID">
                         <span>{{ props.row.id }}</span>
@@ -74,6 +74,15 @@
     </el-dialog>
 </div>
 <style>
+    .headphoto{
+        width:40px;
+        height:40px;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+    .headphoto img{
+        width:100%;
+    }
     .demo-table-expand {
         font-size: 0;
     }
@@ -226,7 +235,6 @@
                         // regForm.submit()
                     }
                 }),
-
                     $.post('/password/edit', {
                         // id : _this.personalData.id,
                         password: _this.form.password,
@@ -247,9 +255,7 @@
                                 message: '编辑失败'
                             });
                         }
-
                     })
-
             },
             //编辑用户时，信息回填
             showForm1(props) {

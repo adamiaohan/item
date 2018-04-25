@@ -3,6 +3,7 @@ const express = require('express')  //const
 const bodyParser = require("body-parser")
 const session = require('express-session')
 const cookieParser = require("cookie-parser")
+const multer = require('multer')
 
 const app = express()
 app.use(cookieParser())
@@ -14,6 +15,22 @@ app.use(session({
   saveUninitialized: true,
   cookie: { secure: false }
 }))
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+      //设置上传目录
+      cb(null, __dirname + '/static/img/photo')
+
+  },
+  filename: function (req, file, cb) {
+      // 设置文件名
+      var file = file.originalname;
+      cb(null, file)
+  }
+});
+var upload = multer({ storage: storage })
+app.post('/upload', upload.any(), function (req, res) {
+  res.send(req.files)
+})
 
 app.get('/index', require ('./src/index.js'))   //设置主要路由
 // app.get('/users/add', require ('./src/users.add.js')) 
@@ -109,4 +126,7 @@ app.post('/password/edit', require ('./src/post.password.edit.js'))
 
 //获取选项数据
 app.get('/option', require ('./src/get.option.js'))
+
+//上传头像
+app.post('/upload/post', require ('./src/post.upload.post.js'))
 app.listen(80)
