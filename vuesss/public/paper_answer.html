@@ -1,0 +1,166 @@
+<div id="paperAnswer">
+    <el-card header="问卷统计" shadow="naver" style="margin:5px">
+        <ve-pie :data="bingchartData" :settings="bingchartSettings"></ve-pie>
+    </el-card>
+    <el-card header="问卷详情" shadow="naver">
+        <el-table :data="answerList" style="width:100%">
+            <el-table-column prop="title" label="标题">
+            </el-table-column>
+            <el-table-column label="内容">
+                <template slot-scope="scope">
+                    <div v-for="(item,index) in scope.row.content">
+                        <span class="i-text">{{item.text}}</span>
+                        <el-tag size="mini" :type="type[item.answer-1]">{{trAnswer(item.answer,scope.row.item)}}</el-tag>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column label="统计">
+                <template slot-scope="scope">
+                    <ve-histogram height='200px' width="220px" :data="scope.row.chartData" :settings="{}"></ve-histogram>
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-card>
+</div>
+<script>
+    new Vue({
+        el: '#paperAnswer',
+        data() {
+            return {
+                answerList: [],
+                type: ["success", "", "warning", "danger"],
+                chartData: {
+                    columns: ['level', 'pre'],
+                    rows: []
+                },
+                bingchartData: {
+                    columns: ['评价', '数量'],
+                    rows: []
+                },
+                bingchartSettings: {
+                    dimension: '评价',
+                    metrics: '数量',
+                    dataType: '',
+                    selectedMode: 'single',
+                    hoverAnimation: true,
+                    radius: 100,
+                    offsetY: 200
+                }
+            }
+        },
+        created() {
+            // console.log(this.bingchartData)
+            var _this = this
+            $.get('/paper/answer', function (result) {
+                if (result.error == 0) {
+                    //递归遍历，将result.data里面的数组转换成对象
+                    var data = JSON.stringify(result.data)
+                    result.data = JSON.parse(data, function (key, val) {
+                        //将键为content和item的元素转换成对象并替换，其他的原样返回
+                        if (key == 'content' || key == 'item') {
+                            return JSON.parse(val)
+                        } else {
+                            return val
+                        }
+                    })
+                    for (j in result.data) {
+        /*  ------------------------饼状图数据获取-----------------------*/
+                        var bingchartData = {
+                            columns: ['评价', '数量'],
+                            rows: []
+                        }
+                        var Banswer = []
+                        for (n in result.data) {
+                            for (m in result.data[n].content) {
+                                var wanswer = result.data[n].content[m].answer
+                                wanswer = _this.trAnswer(result.data[n].content[m].answer, result.data[j].item)
+                                Banswer.push(wanswer)
+                            }
+                        }
+                        var obj = {}
+                        for (w in Banswer) {
+                            var ai = Banswer[w]
+                            if (obj[ai]) {
+                                obj[ai]++
+                            } else {
+                                obj[ai] = 1
+                            }
+                        }
+                        for (p in obj) {
+                            bingchartData.rows.push({
+                                评价: p,
+                                数量: obj[p]
+                            })
+                        }
+      /*  ------------------------柱状图数据获取-----------------------*/
+                        var chartData = {
+                            columns: ['level', 'pre'],
+                            rows: []
+                        }
+                        var tmp = {}
+                        for (k in result.data[j].content) {
+                            var answer = result.data[j].content[k].answer
+                            answer = _this.trAnswer(result.data[j].content[k].answer, result.data[j].item)
+
+                            console.log(answer)
+                  //判断answer的个数
+                 //如果tmp里面有answer,则加1，若没有，则为1
+                            if (tmp[answer]) {
+                                tmp[answer]++
+                            } else {
+                                tmp[answer] = 1
+                            }
+                        }
+                        for (l in tmp) {
+                            chartData.rows.push({
+                                level: l,
+                                pre: tmp[l]
+                            })
+                        }
+                        result.data[j].chartData = chartData
+                        //将chartData 加入到数据中去
+                        result.data[j].chartData = chartData
+                    }
+                    _this.answerList = result.data
+                    console.log(_this.answerList)
+                    //饼状图数据
+                    _this.bingchartData = bingchartData
+
+                } else {
+                    console.log('数据获取失败')
+                }
+            })
+        },
+        methods: {
+            //对answer进行转换
+            trAnswer(id, item) {
+                mitem = {}
+                for (i in item) {
+                    mitem[item[i].id] = item[i].text
+                }
+                return mitem[id]
+            }
+
+
+            // fcontent(row,colum){
+            //     var str = ''
+            //     var item=JSON.parse(row.item),
+            //     content=JSON.parse(row.content)
+            //     var mitem={}
+            // for(j in item){
+            //     mitem[item[j].id] = item[j].text
+            // }
+            // for(i in content){
+            //     str += content[i].text+':'+mitem[content[i].answer]+';'
+            // }
+            // return str
+            // }
+        }
+    })
+</script>
+<style>
+    .i-text {
+        display: inline-block;
+        width: 50px;
+    }
+</style>

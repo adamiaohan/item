@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/vue.js"></script>
+    <script src="js/js.cookie.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="//unpkg.com/echarts/dist/echarts.min.js"></script>
+    <script src="//unpkg.com/v-charts/lib/index.min.js"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            font-size: 14px;
+            box-sizing: border-box;
+            font-style: normal;
+            text-decoration: none;
+        }
+
+        #containter {
+            /* width: 90%; */
+            margin: 0 auto;
+        }
+
+        #header {
+            width: 100%;
+            height: 40px;
+            margin: 0 auto;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 160px;
+            float: left;
+        }
+
+        .logo img {
+            width: 100%;
+        }
+
+        .out {
+            float: right;
+            margin-right: 20px;
+        }
+        .pict{
+            display: inline-block;
+            width:40px;
+        }
+        .outText{
+            display: inline-block;
+            height:100%;
+            width:30px;
+            line-height: 30px;
+            vertical-align:top;
+            margin-top: 10px;
+        }
+        .pict img{
+            width:100%;
+        }
+
+        #content {
+            overflow: hidden;
+            clear: both;
+        }
+
+        #content>div {
+            float: left;
+            /* border: 1px solid red; */
+        }
+
+        #cleft {
+            width: 20%;
+        }
+
+        #cright {
+            width: 70%;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="containter">
+        <div id="header">
+            <div class="logo">
+                <img src="img/logo.png" alt="">
+            </div>
+            <div class="out">
+                <div class="pict">
+                    <img src="/img/photo/default.png" alt="">
+                </div>
+                <span class="outText">
+                    <a href="/logout">注销</a>
+                </span>
+            </div>
+
+        </div>
+        <div id="content">
+            <div id="cleft">
+                <el-menu default-active="2" class="el-menu-vertical-demo" @select="loadPage">
+                    <el-menu-item index="menu/personal.html">
+                        <i class="el-icon-edit"></i><span>个人中心</span>
+                    </el-menu-item>
+                    <el-menu-item index="menu/user.html">
+                        <i class="el-icon-view"></i><span>用户管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="menu/outline.html">
+                        <i class="el-icon-share"></i><span>大纲管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="menu/papers.html">
+                        <i class="el-icon-share"></i><span>问卷管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="menu/option.html">
+                        <i class="el-icon-setting"></i><span>选项管理</span>
+                    </el-menu-item>
+
+            </div>
+            <div id="cright">
+            </div>
+        </div>
+        <div id="footer">
+
+        </div>
+    </div>
+
+    <script>
+        var indexVm = new Vue({
+            el: '#cleft',
+            data: {},
+            methods: {
+                loadPage: function (index) {
+                    $.get(index, function (result) {
+                        $('#cright').html(result)
+                    })
+
+                }
+            }
+        })
+    </script>
+
+    <!-- 实现头部和尾部不变，中间的内容变化 -->
+    <!-- <div id="nav"> -->
+    <!-- /nav/a.html 是路由，不是网址  将a,b,c子页面用nav/：name  路由引入 -->
+    <!-- 设置的对应子html文件，不能写头部和尾部，直接写内容<h1>.... -->
+    <!-- <a href="/nav/a.html">aaa</a>
+        <a href="/nav/b.html">bbb</a>
+        <a href="/nav/c.html">ccc</a>
+    </div>
+    <div id="content">
+        content
+    </div>
+    <div id="footer">
+        footer
+    </div> -->
+    <!-- <script> -->
+    <!-- // a链接  点击后会跳转到路由相对应的页面，所以要阻止跳转
+        // $('#nav a').click(function () {
+        //     console.log(this)   //指向当前a标签
+        //     console.log(event)
+        //     event.preventDefault()
+        //     $.get(this.href, function (result) {   //获取a标签里面的href，并且get里面的内容
+        //         if (result != 0) {
+        //             $('#content').html(result)   //将内容返回到content
+        //         } else {
+        //             alert('没有权限')
+        //         }
+        //     })
+        // }) -->
+    <!-- </script> -->
+</body>
+
+</html>

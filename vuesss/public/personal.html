@@ -1,0 +1,307 @@
+<div id="personal">
+    <div class="user">用户中心
+    </div>
+    <el-table :data="personalData" style="width: 100%">
+        <el-table-column>
+            <template slot-scope="props">
+                <el-form label-position="left" inline class="demo-table-expand">
+                    <el-form-item label="头像">
+                        <img :src="props.row.photo" alt="">
+                    </el-form-item>
+                    <el-form-item label="ID">
+                        <span>{{ props.row.id }}</span>
+                    </el-form-item>
+                    <el-form-item label="用户名">
+                        <span>{{ props.row.username }}</span>
+                    </el-form-item>
+                    <el-form-item label="手机">
+                        <span>{{ props.row.phone }}</span>
+                    </el-form-item>
+                    <el-form-item label="邮箱">
+                        <span>{{ props.row.email }}</span>
+                    </el-form-item>
+                    <el-form-item label="性别">
+                        <span>{{sex[props.row.sex]}}</span>
+                    </el-form-item>
+                    <el-form-item label="密码">
+                        <el-button size="mini" type="primary" plain @click="dialogFormVisible2=true">修改密码</el-button>
+                    </el-form-item>
+                    <el-form-item label="用户编辑">
+                        <el-button size="mini" type="primary" plain @click="showForm1(props)">用户编辑</el-button>
+                    </el-form-item>
+                </el-form>
+            </template>
+        </el-table-column>
+    </el-table>
+    <el-dialog title="修改密码" :visible.sync="dialogFormVisible2">
+        <el-form :model="form" ref="form1" :rules="rules" id="regForm">
+            <el-form-item label="输入新密码" :label-width="formLabelWidth" prop="password">
+                <el-input type='password' v-model="form.password" name="password" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="确认密码" :label-width="formLabelWidth" prop="password2">
+                <el-input type='password' v-model="form.password2" name="password2"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="cancel">取 消</el-button>
+            <el-button type="primary" @click="savepassword()">确 定</el-button>
+            <!-- @click="savepassword" -->
+        </div>
+    </el-dialog>
+    <el-dialog title="编辑用户" :visible.sync="dialogFormVisible3">
+        <el-form :model="form1" ref="form" :rules="rules1" id="regForm">
+            <el-form-item label="用户名" :label-width="formLabelWidth" prop="username">
+                <el-input v-model="form1.username" name="username" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="手机" :label-width="formLabelWidth" prop="phone">
+                <el-input v-model="form1.phone" name="phone"></el-input>
+            </el-form-item>
+            <el-form-item label="邮箱" :label-width="formLabelWidth" prop="email">
+                <el-input v-model="form1.email" name="email" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="性别" :label-width="formLabelWidth" prop="sex">
+                <el-radio-group v-model="form1.sex" name="sex">
+                    <el-radio :label="1">男</el-radio>
+                    <el-radio :label="2">女</el-radio>
+                    <el-radio :label="3">保密</el-radio>
+                </el-radio-group>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogFormVisible3 = false">取 消</el-button>
+            <el-button type="primary" @click="saveuser()">确 定</el-button>
+        </div>
+    </el-dialog>
+</div>
+<style>
+    .demo-table-expand {
+        font-size: 0;
+    }
+
+    .demo-table-expand label {
+        width: 90px;
+        color: #99a9bf;
+    }
+
+    .demo-table-expand .el-form-item {
+        margin-right: 0;
+        margin-bottom: 0;
+        width: 50%;
+    }
+</style>
+<script>
+    new Vue({
+        el: '#personal',
+        data: function () {
+            var _this = this
+            var chkPwd = function (rule, value, callback) {
+                // console.log(_this)//指向全部信息
+                // console.log(this)
+                if (value.trim() == "") {
+                    callback(new Error('请输入确认密码'))
+                } else if (value == _this.form.password) {
+                    callback()
+                } else {
+                    callback(new Error('密码不一致'))
+                }
+
+            }
+            return {
+                usersData: [],
+                personalData: [],
+                sex: ['', '男', '女', '保密'],
+                dialogFormVisible2: false,
+                dialogFormVisible3: false,
+                formLabelWidth: '120px',
+                form: {
+                    password: '',
+                    password2: '',
+                },
+                form1: {
+                    id: '',
+                    username: '',
+                    phone: '',
+                    email: '',
+                    sex: ''
+                },
+                rules1: { //验证规则
+                    username: [
+                        {
+                            validator: function (rule, value, callback) {
+                                var usernameReg = /^[a-z]\w{2,17}$/
+                                if (value.trim() == '') {
+                                    callback(new Error('请输入用户名'))
+                                } else if (!usernameReg.test(value)) {
+                                    callback(new Error('请输入3-18个字符，以小写字母开始'))
+                                } else {
+                                    callback()
+                                }
+                            },
+                            trigger: 'blur'
+                        },
+                    ],
+                    email: [
+                        {
+                            validator: function (rule, value, callback) {
+                                var emailReg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/
+                                if (value.trim() == '') {
+                                    callback(new Error('请输入邮箱'))
+                                } else if (!emailReg.test(value)) {
+                                    callback(new Error('邮箱格式不合法'))
+                                } else {
+                                    callback()
+                                }
+                            },
+                            trigger: 'blur'
+                        }
+                    ],
+                    phone: [
+                        {
+                            validator: function (rule, value, callback) {
+                                var phonereg = /^[1][3,4,5,7,8][0-9]{9}$/;
+                                if (value.trim() == '') {
+                                    callback(new Error('请输入手机号'))
+                                } else if (!phonereg.test(value)) {
+                                    callback(new Error('手机格式不合法'))
+                                } else {
+                                    callback()
+                                }
+                            },
+                            trigger: 'blur'
+                        }
+                    ]
+                },
+                rules: {
+                    password: [
+                        {
+                            validator: function (rule, value, callback) {
+                                var len = value.length
+                                if (value.trim() == '') {
+                                    callback(new Error('请输入密码'))
+                                } else if (len < 6 || len > 18) {
+                                    callback(new Error('密码为6-18个字符'))
+                                } else {
+                                    //密码改变时，对password2进行触发
+                                    //validateField 触发单个字段的验证规则
+                                    _this.$refs.form1.validateField('password2')
+                                    callback()
+                                }
+                            }
+                            //默认验证方式就是change
+                        }
+                    ],
+                    password2: [
+                        {
+                            validator: chkPwd
+                        }
+
+                    ],
+                }
+            }
+        },
+        created() {
+            var _this = this
+            $.get('/personal/get', function (result) {
+                if (result.error == 0) {
+                    _this.personalData = result.data
+                    // console.log(_this.personalData)
+                } else {
+                    console.log('数据获取失败')
+                }
+            })
+        },
+        methods: {
+            cancel() {
+                var _this = this
+                _this.dialogFormVisible2 = false
+                _this.form.password = ''
+                _this.form.password2 = ''
+            },
+            savepassword() {
+                var _this = this
+                //validate全部验证
+                this.$refs.form1.validate(function (valid) {
+                    //console.log(valid)  //若验证不通过则false  否则true
+                    if (valid) {  //验证全部通过提交
+                        // regForm.submit()
+                    }
+                }),
+
+                    $.post('/password/edit', {
+                        // id : _this.personalData.id,
+                        password: _this.form.password,
+                    }, function (result) {
+                        if (result.error == 0) {
+                            console.log(result)
+                            indexVm.loadPage('/menu/personal.html')
+                            _this.dialogFormVisible2 = false
+                            _this.$message({
+                                type: 'success',
+                                message: '编辑成功'
+
+                            });
+                        } else {
+                            console.log('编辑失败')
+                            _this.$message({
+                                type: 'error',
+                                message: '编辑失败'
+                            });
+                        }
+
+                    })
+
+            },
+            //编辑用户时，信息回填
+            showForm1(props) {
+                var _this = this
+                _this.form1.username = props.row.username
+                _this.form1.phone = props.row.phone
+                _this.form1.email = props.row.email
+                _this.form1.sex = props.row.sex
+                _this.form1.id = props.row.id
+                _this.dialogFormVisible3 = true
+            },
+            //保存编辑后的信息
+            saveuser() {
+                var _this = this
+                //validate全部验证
+                this.$refs.form.validate(function (valid) {
+                    //console.log(valid)  //若验证不通过则false  否则true
+                    if (valid) {  //验证全部通过提交
+                        // regForm.submit()
+                    }
+                }),
+                    $.post('/personal/edit', {
+                        id: _this.form1.id,
+                        username: _this.form1.username,
+                        phone: _this.form1.phone,
+                        email: _this.form1.email,
+                        sex: _this.form1.sex,
+                    }, function (result) {
+                        if (result.error == 0) {
+                            console.log(result)
+                            indexVm.loadPage('/menu/personal.html')
+                            _this.dialogFormVisible3 = false
+                            _this.$message({
+                                type: 'success',
+                                message: '编辑成功'
+                            });
+                        } else {
+                            console.log('编辑失败')
+                            _this.$message({
+                                type: 'error',
+                                message: '编辑失败'
+                            });
+                        }
+
+                    })
+            },
+        }
+
+    })
+</script>
+<style>
+    .user {
+        font-weight: 600;
+    }
+</style>

@@ -1,0 +1,175 @@
+<div id="paper">
+    <el-button type="primary" size="mini" onclick="indexVm.loadPage('/menu/papers_add.html')">创建问卷</el-button>
+    <el-table  stripe v-loading="loading" :data="papergetData.slice((currentPage-1)*pagesize,currentPage*pagesize)" style="width: 100%">
+        <el-table-column prop="title" label="标题" width="180">
+        </el-table-column>
+        <el-table-column prop="creator_id" label="创建人" width="180">
+        </el-table-column>
+        <el-table-column label="创建时间" width="180">
+            <template slot-scope="scope">
+                {{scope.row.ctime|currency}}
+            </template>
+        </el-table-column>
+        <el-table-column fixed="right" label="操作">
+            <template slot-scope="scope">
+                <el-button @click="loadPage(scope.row.id)" type="text" size="small">编辑</el-button>
+                <el-button @click="answer(scope.row.id)" type="text" size="small">详情</el-button>
+                <a target="_blank" :href="'/paper/release?id='+scope.row.id">
+                    <el-button type="text" size="small">发布</el-button></a>
+                <el-button @click="dele(scope)" type="text" size="small">删除</el-button>
+
+            </template>
+        </el-table-column>
+    </el-table>
+    <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage" :page-sizes="[5, 10, 15, 20]"
+            :page-size="pagesize" layout="total, sizes, prev, pager, next, jumper" :total=papergetData.length>
+        </el-pagination>
+</div>
+<script>
+    new Vue({
+        el: "#paper",
+        data: function () {
+            return {
+                papergetData: [],
+                usersData:[],
+                loading: true,
+                currentPage:1,
+                pagesize:5,
+            }
+        },
+        created() {
+            var _this = this
+            $.get('/paper/get', function (result) {
+                if (result.error == 0) {
+                    // console.log(result.data)
+                    // console.log(_this.papergetData)
+                    $.get('/user/get', function (result) {
+                        if (result.error == 0) {
+                            _this.usersData = result.data
+                            // console.log(_this.usersData)
+                            for(var m=0;m<_this.papergetData.length;m++){
+                                // console.log(_this.papergetData[m])
+                                for( var n=0;n<_this.usersData.length;n++){
+                                    if(_this.papergetData[m].creator_id==_this.usersData[n].id){
+                                        _this.papergetData[m].creator_id = _this.usersData[n].username
+                                    }
+                                }
+                            }
+                        } else {
+                            console.log('数据获取失败')
+                        }
+                    }, 'json')
+                    _this.papergetData = result.data
+                } else {
+                    console.log('数据获取失败')
+                }
+                _this.loading = false
+            }, 'json')
+
+        },
+        methods: {
+            loadPage: function (id) {
+                indexVm.loadPage('/menu/papers_edit.html?paper_id=' + id)
+            },
+            answer: function (id) {
+                indexVm.loadPage('/menu/paper_answer.html?paper_id=' + id)
+            },
+            dele: function (scope) {
+                var _this = this
+                this.$confirm('注意：删除文件不可恢复！', '确定删除吗？', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning',
+                    callback: function (action) {
+                        if (action == 'cancel') {
+                            return
+                        }
+                        //点击确认后删除
+                        _this.loading = true
+                        $.get('/paper/del', { id: scope.row.id }, function (result) {
+                            if (result.error == 0) {
+                                _this.papergetData.splice(scope.$index, 1)   //只在前端删除行
+                                _this.$message({
+                                    type: 'success',
+                                    message: '删除成功！'
+                                })
+                            } else {
+                                console.log('删除失败')
+                            }
+                            _this.loading = false
+                        })
+                    }
+                })
+            },
+            //分页器
+            handleSizeChange(val) {
+                this.pagesize = val;
+                       console.log(`每页 ${val} 条`);
+            },
+            handleCurrentChange(val) {
+                this.currentPage = val;
+            },
+        },
+        filters: {
+            currency(time) {
+                if (new Date(time).getTime() != 0) {
+                    var ntime = new Date(time),
+                        y = ntime.getFullYear(),
+                        m = ntime.getMonth() + 1,
+                        d = ntime.getDate()
+                        h = ntime.getHours(),
+                        mm = ntime.getMinutes(),
+                        s = ntime.getSeconds()
+                        if(m<10){
+                            m = '0'+m
+                        }
+                        if(d<10){
+                            d = '0'+d
+                        }
+                        if(h<10){
+                            h = '0'+h
+                        }
+                        if(mm<10){
+                            mm = '0'+mm
+                        }
+                        if(s<10){
+                            s = '0'+s
+                        }
+                    return y + '-' + m + '-' + d + ' '+ h +':'+mm+':'+s
+                }
+            }
+        },
+    })
+
+</script>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    #paper {
+        padding: 10px;
+    }
+
+    .contents {
+        overflow: hidden;
+    }
+
+    .contents>div {
+        float: left;
+        margin: 5px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+    }
+
+    .clefts {
+        width: 19%;
+    }
+
+    /* .crights {
+        width: 78%;
+    } */
+</style>

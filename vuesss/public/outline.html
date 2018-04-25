@@ -1,0 +1,205 @@
+<div id="outline">
+    <el-button @click="addFather" class="btn" type="primary" size="mini">添加根节点</el-button>
+    <el-tree :data="data" default-expand-all :props="defaultProps" draggable @node-drop="drop">
+        <span @mouseover="data.flag=true" @mouseout="data.flag=false" slot-scope="{ node, data }">
+            {{data.text}}
+            <span v-show="data.flag">
+                <el-button type="text" size="mini" @click.stop="editOutline(data)">
+                    <i class="el-icon-edit"></i>编辑</el-button>
+                <el-button type="text" size="mini" @click.stop="addOutline(data)">
+                    <i class="el-icon-circle-plus-outline"></i>添加子节点</el-button>
+                <el-button v-show="!data.children[0]" type="text" size="mini" @click.stop="delOutline(node,data)">
+                    <i class="el-icon-remove"></i>删除</el-button>
+            </span>
+
+        </span>
+    </el-tree>
+</div>
+<script>
+    new Vue({
+        el: "#outline",
+        data: function () {
+            return {
+                data: [],
+                defaultProps: {
+                    children: 'children',
+                    label: 'text'
+                }
+            };
+        },
+        created: function () {
+            var _this = this
+            $.get('/outline', function (result) {
+                if (result.error != 0) { return }
+                _this.data = result.data
+                console.log(_this.data)
+            })
+        },
+        methods: {
+            //拖拽
+            drop: function (node1, node2, pos) {
+                console.log(pos)  //before  adter  位置
+                // node1是当前节点   node2是离得最近的节点
+                var id = node1.data.id
+                if (pos == 'before') {
+                    if (node2.previousSibling.previousSibling) {
+                        var prenode = node2.previousSibling.previousSibling
+                        presort = prenode.data.sort
+                    } else {
+                        presort = node2.data.sort - 0.01
+                    }
+                    // console.log(prenode)
+                    $.post('/outline/sort', {
+                        id: id,
+                        pid: node2.data.pid,
+                        sort: (node2.data.sort + presort) / 2  //最近元素的sort+前一个元素的节点/2
+                    }, function (result) {
+                        if (result.error != 0) return
+                    })
+                } else if (pos == 'after') {
+                    // if(node2.level!=node1.level){
+                    //     var pid = node2.data.pid
+                    // }else{
+                    //      var pid = node1.data.pid
+                    // }
+                        if (node2.nextSibling.nextSibling) {
+                            var nextnode = node2.nextSibling.nextSibling
+                            nextsort = nextnode.data.sort
+                        } else {
+                            nextsort = node2.data.sort + 0.01
+                        }
+                        // console.log(prenode)
+                        $.post('/outline/sort', {
+                            id: id,
+                            pid: node2.data.pid,
+                            sort: (node2.data.sort + nextsort) / 2  //最近元素的sort+前一个元素的节点/2
+                        }, function (result) {
+                            if (result.error != 0) return
+                        })
+                    }else{
+                        //inner情况
+                        $.post('/outline/sort', {
+                            id: id,
+                            pid: node2.data.id,
+                            sort: 0
+                        }, function (result) {
+                            if (result.error != 0) return
+                        })
+                    }
+                
+
+            },
+            //添加根节点
+            addFather:function(data){
+                var _this = this
+                console.log(data)
+                this.$prompt('请输入内容', '添加根节点', {
+                    inputPattern: /^.+$/,
+                    inputErrorMessage: '内容不能为空',
+                    callback: function (action, obj) {
+                        if (action != 'confirm') return
+                        $.post('outline/addfather', {
+                            text: obj.inputValue,
+                            pid: 0,
+                        }, function (result) {
+                            if (result.error != 0) { return }
+                            // console.log(action)
+                            // 点击取消则return    若只有一条信息，{}可以省略
+                            // console.log(obj.inputValue)
+                            _this.data.push({
+                                text: obj.inputValue,
+                                children: [],
+                                id: result.id,
+                                pid: 0,   //将id传入，后面变成pid
+                                flag: false,
+                            })
+                        })
+                    }
+                })
+            },
+            //添加子节点
+            addOutline: function (data) {
+                var _this = this
+                console.log(data)
+                this.$prompt('请输入内容', '添加子节点', {
+                    inputPattern: /^.+$/,
+                    inputErrorMessage: '内容不能为空',
+                    callback: function (action, obj) {
+                        if (action != 'confirm') return
+                        $.post('/outline/add', {
+                            text: obj.inputValue,
+                            pid: data.id,
+                        }, function (result) {
+                            if (result.error != 0) { return }
+                            // console.log(action)
+                            // 点击取消则return    若只有一条信息，{}可以省略
+                            // console.log(obj.inputValue)
+                            data.children.push({
+                                text: obj.inputValue,
+                                children: [],
+                                id: result.id,
+                                pid: data.id,   //将id传入，后面变成pid
+                                flag: false,
+                            })
+                        })
+
+
+
+                    }
+                })
+            },
+            //删除
+            delOutline: function (node, data) {
+                this.$confirm('删除后不能恢复', '删除', {
+                    callback: function (action) {
+                        if (action == 'confirm') {
+                            $.get('outline/del', {
+                                id: data.id,
+                            }, function (result) {
+                                if (result.error != 0) { return }
+                                // node为当前节点
+                                var parent = node.parent;
+                                var children = parent.data.children || parent.data;
+                                var index = children.findIndex(function (value) {
+                                    // console.log(value)  //当前节点的所有数据
+                                    return value.id == data.id  //作为判断条件   当满足时才返回
+                                });
+                                children.splice(index, 1);
+                                // console.log(index)   //返回当前节点的索引
+                            })
+
+                        }
+                    }
+                })
+            },
+            //编辑节点
+            editOutline: function (data) {
+                var _this = this
+                this.$prompt('请输入内容', '编辑节点', {
+                    inputPattern: /^.+$/,
+                    inputErrorMessage: '内容不能为空',
+                    inputValue: data.text,
+                    callback: function (action, obj) {
+                        if (action != 'confirm') return
+                        $.post('outline/edit', {
+                            text: obj.inputValue,
+                            id: data.id,
+                            sort: 0
+                        }, function (result) {
+                            if (result.error != 0) { return }
+                            // data.text = obj.inputValue   //需要双向绑定
+                            _this.$set(data, 'text', obj.inputValue)
+                            console.log(data)
+                        })
+
+                    }
+                })
+            }
+        }
+    })
+</script>
+<style>
+    .btn{
+        margin-bottom: 20px;
+    }
+</style>

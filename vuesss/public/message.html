@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/js.cookie.js"></script>
+    <script src="/js/vue.js"></script>
+    <style>
+        html,body{
+            width: 100%;
+            height:100%;
+        }
+        *{
+            margin: 0;
+            padding: 0;
+            margin-bottom: 10px;
+        }
+        #header{
+            width: 400px;
+            margin: 40px auto 0 auto;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        /* .main{
+            text-align: center;
+            line-height: 300px;
+            background: #fff;
+            
+        } */
+        .success{
+            color:green;
+        }
+        .error{
+            color:red;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <div class="logo">
+            <img src="/img/logo.png" alt="">
+        </div>
+        <div class="main" :class="message.status">
+            <span class="title">{{message.msg}}</span>
+            <p>
+                <a class="red" :href="message.link">{{message.linkText}}</a>
+            </p>
+        </div>
+    </div>
+    <script>
+       var vm = new Vue({
+           el:"#header",
+           created:function(){
+               this.message = Cookies.getJSON('message')
+           },
+           data:function(){
+               return {
+                   message:{}
+               }
+           }
+       })
+    </script>
+</body>
+</html>

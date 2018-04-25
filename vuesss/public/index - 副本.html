@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/vue.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+</head>
+
+<body>
+    <!-- 实现头部和尾部不变，中间的内容变化 -->
+    <div id="nav">
+        <!-- /nav/a.html 是路由，不是网址  将a,b,c子页面用nav/：name  路由引入 -->
+        <!-- 设置的对应子html文件，不能写头部和尾部，直接写内容<h1>.... -->
+        <a href="/nav/a.html">aaa</a>
+        <a href="/nav/b.html">bbb</a>
+        <a href="/nav/c.html">ccc</a>
+    </div>
+    <div id="content">
+        content
+    </div>
+    <div id="footer">
+        footer
+    </div>
+    <script>
+        // a链接  点击后会跳转到路由相对应的页面，所以要阻止跳转
+        $('#nav a').click(function () {
+            console.log(this)   //指向当前a标签
+            console.log(event)
+            event.preventDefault()
+            $.get(this.href, function (result) {   //获取a标签里面的href，并且get里面的内容
+                if (result != 0) {
+                    $('#content').html(result)   //将内容返回到content
+                } else {
+                    alert('没有权限')
+                }
+            })
+        })
+    </script>
+</body>
+
+</html>

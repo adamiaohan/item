@@ -1,0 +1,154 @@
+<!-- 编辑问卷 -->
+
+<div id="paperEdit">
+    <div class="contents">
+        <el-card class="clefts">
+            <el-tree :data="outline" show-checkbox default-expand-all :props="defaultProps" @check-change="selectNode" node-key="id"
+                ref="tree"></el-tree>
+        </el-card>
+        <div class="crights">
+            <el-card style="margin:5px" v-for="(item,index) in page.content" :key="'page_'+index" :header="item.text">
+                <!-- {{item.text}} -->
+                <el-radio-group v-model="radio2">
+                    <el-radio :label="i.id" v-for="(i,index) in page.item" :key="'item_'+index">{{i.text}}</el-radio>
+                </el-radio-group>
+            </el-card>
+        </div>
+
+    </div>
+    <div class="ft" slot="footer">
+        <el-button onclick="indexVm.loadPage('/menu/papers.html')">取 消</el-button>
+        <el-button type="primary" @click="saveQues1">确 定</el-button>
+    </div>
+</div>
+<script>
+    new Vue({
+        el: "#paperEdit",
+        data: function () {
+            return {
+                radio2: '',
+                dgShow: false,
+                paperData: [],
+                outline: [],
+                papergetData: [],
+                arr: [],
+                defaultProps: {
+                    children: 'children',
+                    label: 'text',
+                },
+                page: {
+                    id: '',
+                    title: '',
+                    content: [],
+                    item: [
+                        { id: 1, text: '优秀', val: 5 },
+                        { id: 2, text: '良好', val: 4 },
+                        { id: 3, text: '中等', val: 3 },
+                        { id: 4, text: '很差', val: 2 },
+                    ]
+                },
+            }
+        },
+        created() {
+            var _this = this
+            $.get('/outline', function (result) {
+                if (result.error != 0) { return }
+                _this.outline = result.data
+            }),
+                $.get('/paper/find', { id: Cookies.get('paper_id') }, function (result) {
+                    if (result.error == 0) {
+                        _this.paperData = result.data
+                        console.log(_this.paperData.title)
+                        _this.$refs.tree.setCheckedNodes(JSON.parse(result.data.content))
+
+                    } else {
+                        console.log('数据获取失败')
+                    }
+                    // _this.loading = false
+                }, 'json')
+        },
+        methods: {
+            selectNode: function (data, isSelect) {
+                //过滤掉非叶子节点
+                if (data.children.length == 0) {
+                    // console.log(data)
+                    //选中时展示
+                    if (isSelect) {
+                        this.page.content.push(data)
+                    } else {
+                        var index = this.page.content.indexOf(data)
+                        this.page.content.splice(index, 1)
+                    }
+
+                }
+
+            },
+            //保存编辑后的问卷
+            saveQues1() {
+                var _this = this
+                this.$prompt('请输入问卷标题', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    inputPattern: /^.+$/,
+                    inputErrorMessage: '标题不能为空',
+                    inputValue: _this.paperData.title,
+                    callback: function (action, obj) {
+                        if (action == 'confirm') {
+                            _this.page.title = obj.inputValue
+                            $.post('/paper/edit', {
+                                id: _this.paperData.id,
+                                title: _this.page.title,
+                                content: JSON.stringify(_this.page.content),
+                                item: _this.page.item
+                            }, function (result) {
+                                console.log(result)
+                                indexVm.loadPage('/menu/papers.html')
+                                _this.$message({
+                                    type: 'success',
+                                    message: '编辑成功'
+                                });
+                            })
+                        }else{
+                            _this.$message({
+                                    type: 'error',
+                                    message: '编辑失败'
+                                });
+                        }
+                    }
+                })
+            },
+        },
+
+    })
+
+</script>
+
+
+
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    #paper {
+        padding: 10px;
+    }
+
+    .contents {
+        overflow: hidden;
+    }
+
+    .contents>div {
+        float: left;
+        margin: 5px;
+    }
+    .crights{
+        width:500px;
+    }
+    .ft{
+        float:right
+    }
+</style>

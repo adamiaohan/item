@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/vue.js"></script>
+    <script src="/js/js.cookie.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            font-size: 14px;
+            box-sizing: border-box
+        }
+
+        #containter {
+            width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        #header {
+            margin: 0 auto;
+        }
+
+        #content {
+            overflow: hidden;
+        }
+
+        #content>div {
+            float: left;
+            /* border: 1px solid red; */
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="containter">
+        <div id="header">
+            <div class="logo">
+                <img src="/img/logo.png" alt="">
+                <span>随堂问卷</span>
+            </div>
+        </div>
+        <div>{{page.title}}</div>
+
+        <el-card style="margin:5px" v-for="(item,index) in page.content" :key="'page_'+index" :header="item.text">
+            <!-- {{item.text}} -->
+            <el-radio-group v-model="page.content[index].answer">
+                <el-radio :label="i.id" v-for="(i,index) in page.item" :key="'item_'+index">{{i.text}}</el-radio>
+            </el-radio-group>
+        </el-card>
+        <el-card style="margin-bottom:5px" header="其他建议">
+            <el-input type="textarea" :row="2" placeholder="其他建议" v-model="page.note"></el-input>
+        </el-card>
+        <div>
+            <el-button type="primary" @click="savepaper">提交</el-button>
+        </div>
+    </div>
+
+    <script>
+
+        var rVm = new Vue({
+            el: '#containter',
+            created() {
+                var _this = this,
+                    id = this.paperId
+                $.get('/paper/find', { id: id }, function (result) {
+                    if (result.error != 0) { return }
+                    // console.log(result)
+                    _this.page.title = result.data.title
+                    _this.page.content = JSON.parse(result.data.content)
+                    _this.page.item = JSON.parse(result.data.item)
+                })
+            },
+            data: {
+                paperId: Cookies.getJSON('release_paper_id'),
+                page: {
+                    title: '',
+                    content: [],
+                    note: '',
+                    item: [
+                        // { id: 1, text: '优秀', val: 5 },
+                        // { id: 2, text: '良好', val: 4 },
+                        // { id: 3, text: '中等', val: 3 },
+                        // { id: 4, text: '很差', val: 2 },
+
+                    ]
+                },
+            },
+            methods: {
+                savepaper() {
+                    var _this = this
+                    var arr = []
+                    for (i in _this.page.content) {
+                        arr.push(_this.page.content[i].answer)
+                        console.log(arr)
+                    }
+                    if (arr.indexOf(undefined) != -1) {
+                        _this.$message({
+                            type: 'error',
+                            message: '您有选项未选择'
+                        });
+                        return
+                    } else {
+                        $.post('/paper/release/add', {
+                            title: _this.page.title,
+                            paper_id: _this.paperId,
+                            content: JSON.stringify(_this.page.content),
+                            item: JSON.stringify(_this.page.item),
+                            note: _this.page.note,
+                            cuid: Cookies.getJSON('releaseInfo' + _this.paperId).cuid
+                        }, function (result) {
+                            console.log(result)
+                            
+                            _this.$message({
+                                type: 'success',
+                                message: '提交成功'
+                            });
+                            location.reload()
+                        })
+                    }
+
+                }
+            }
+        })
+                     // _this.page.content[i].hasOwnProperty('answer')
+                            // console.log('answer' in _this.page.content[i])
+                            // console.log(_this.page.content[i].hasOwnProperty('answer'))
+    </script>
+
+
+</body>
+
+</html>

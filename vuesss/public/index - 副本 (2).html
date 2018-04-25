@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/vue.js"></script>
+    <script src="js/js.cookie.js"></script>
+    <!-- 引入样式 -->
+<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+<!-- 引入组件库 -->
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            font-size: 14px;
+            box-sizing: border-box
+        }
+
+        #containter {
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        #header {
+            /* width: 100%; */
+            /* height: 60px; */
+            /* overflow: hidden; */
+            margin: 0 auto;
+        }
+
+         .logo {
+            width: 160px;
+            height: 100px;
+         } 
+
+        .logo img {
+            width: 100%;
+        }
+
+        #content {
+            overflow: hidden;
+        }
+
+        #content>div {
+            float: left;
+            /* border: 1px solid red; */
+        }
+
+        #cleft {
+            width: 20%;
+        }
+
+        #cright {
+            width: 70%;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="containter">
+        <div id="header">
+            <div class="logo">
+                <img src="img/logo.png" alt="">
+            </div>
+        </div>
+        <a href="/logout">注销</a>
+        <div id="content">
+            <div id="cleft">
+
+                <el-menu default-active="2" class="el-menu-vertical-demo" @select="loadPage">
+                    <el-menu-item index="menu/user.html">
+                        <span>用户管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="menu/outline.html">
+                            <span>大纲管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="menu/papers.html">
+                        <span>问卷管理</span>
+                    </el-menu-item>
+                    <!-- <el-menu-item index="menu/add.html">
+                        <span>用户添加</span>
+                    </el-menu-item> -->
+                    <el-submenu index="1">
+                        <template slot="title">
+                            <i class="el-icon-location"></i>
+                            <span>导航一</span>
+                        </template>
+                        <el-menu-item-group>
+                            <template slot="title">分组一</template>
+                            <el-menu-item index="1-1">选项1</el-menu-item>
+                            <el-menu-item index="1-2">选项2</el-menu-item>
+                        </el-menu-item-group>
+                        <el-menu-item-group title="分组2">
+                            <el-menu-item index="1-3">选项3</el-menu-item>
+                        </el-menu-item-group>
+                        <el-submenu index="1-4">
+                            <template slot="title">选项4</template>
+                            <el-menu-item index="1-4-1">选项1</el-menu-item>
+                        </el-submenu>
+                    </el-submenu>
+                    <el-menu-item index="2">
+                        <i class="el-icon-menu"></i>
+                        <span slot="title">导航二</span>
+                    </el-menu-item>
+                    <el-menu-item index="3" disabled>
+                        <i class="el-icon-document"></i>
+                        <span slot="title">导航三</span>
+                    </el-menu-item>
+                    <el-menu-item index="4">
+                        <i class="el-icon-setting"></i>
+                        <span slot="title">导航四</span>
+                    </el-menu-item>
+                </el-menu>
+            </div>
+            <div id="cright">
+                cright
+            </div>
+        </div>
+        <div id="footer">
+
+        </div>
+    </div>
+
+    <script>
+        var indexVm = new Vue({
+            el: '#cleft',
+            data: {},
+            methods: {
+                loadPage: function (index) {
+                    $.get(index, function (result) {
+                        $('#cright').html(result)
+                    })
+
+                }
+            }
+        })
+    </script>
+
+    <!-- 实现头部和尾部不变，中间的内容变化 -->
+    <!-- <div id="nav"> -->
+    <!-- /nav/a.html 是路由，不是网址  将a,b,c子页面用nav/：name  路由引入 -->
+    <!-- 设置的对应子html文件，不能写头部和尾部，直接写内容<h1>.... -->
+    <!-- <a href="/nav/a.html">aaa</a>
+        <a href="/nav/b.html">bbb</a>
+        <a href="/nav/c.html">ccc</a>
+    </div>
+    <div id="content">
+        content
+    </div>
+    <div id="footer">
+        footer
+    </div> -->
+    <!-- <script> -->
+    <!-- // a链接  点击后会跳转到路由相对应的页面，所以要阻止跳转
+        // $('#nav a').click(function () {
+        //     console.log(this)   //指向当前a标签
+        //     console.log(event)
+        //     event.preventDefault()
+        //     $.get(this.href, function (result) {   //获取a标签里面的href，并且get里面的内容
+        //         if (result != 0) {
+        //             $('#content').html(result)   //将内容返回到content
+        //         } else {
+        //             alert('没有权限')
+        //         }
+        //     })
+        // }) -->
+    <!-- </script> -->
+</body>
+
+</html>
